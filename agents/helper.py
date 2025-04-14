@@ -1,5 +1,6 @@
 # from gemini import GeminiClient
 from agents.gemini import GeminiClient
+from agents.groq import GroqClient
 from functions.helper_functions import process_query
 import os
 
@@ -19,7 +20,7 @@ def get_llm_client(user_choice):
     """
     llm_clients = {
         "gemini": lambda: GeminiClient(),
-        "llama": lambda: LlamaClient(),
+        "groq": lambda: GroqClient(),
         "openai": lambda: OpenAIClient(),
         "anthropic": lambda: AnthropicClient(),
         "cohere": lambda: CohereClient(),
@@ -40,7 +41,7 @@ def get_user_choice():
     """
     print("Supported LLMs:")
     print("1. Gemini")
-    print("2. Llama")
+    print("2. Groq")
     print("3. OpenAI")
     print("4. Anthropic")
     print("5. Cohere")
@@ -49,7 +50,7 @@ def get_user_choice():
 
     llm_choices = {
         "1": "gemini",
-        "2": "llama",
+        "2": "groq",
         "3": "openai",
         "4": "anthropic",
         "5": "cohere"

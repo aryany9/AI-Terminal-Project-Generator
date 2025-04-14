@@ -1,11 +1,7 @@
-from dotenv import load_dotenv
 import os
 from google import genai
 from google.genai import types
-import requests
 import json
-
-load_dotenv()
 
 system_prompt_path = os.path.join(os.path.dirname(__file__), '../utils', 'system_prompt.txt')
 with open(system_prompt_path, 'r') as file:
@@ -14,7 +10,6 @@ with open(system_prompt_path, 'r') as file:
 class GeminiClient:
     def __init__(self):
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-        # self.messages = [{ "role": "system", "content": system_prompt }]
 
     def run_query(self, messages):
         response = self.client.models.generate_content(
