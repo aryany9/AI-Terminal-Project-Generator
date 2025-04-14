@@ -42,18 +42,12 @@ def get_user_choice():
     print("Supported LLMs:")
     print("1. Gemini")
     print("2. Groq")
-    print("3. OpenAI")
-    print("4. Anthropic")
-    print("5. Cohere")
 
     choice = input("Enter the number of the LLM you want to use: ")
 
     llm_choices = {
         "1": "gemini",
-        "2": "groq",
-        "3": "openai",
-        "4": "anthropic",
-        "5": "cohere"
+        "2": "groq"
     }
 
     return llm_choices.get(choice, None)
@@ -76,7 +70,7 @@ def run_agent():
     llm_client = get_llm_client(user_choice)
 
     while True:
-        user_query = input('> ')
+        user_query = input('> What do you want me to create? (type "exit" to quit): ')
         if user_query.lower() == 'exit':
             break
 

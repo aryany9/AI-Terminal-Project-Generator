@@ -4,6 +4,7 @@
 Welcome to the **AI Terminal Project Generator** — a smart terminal powered by multiple LLMs that helps you **build full-stack projects** and **run system commands** directly from your terminal.
 
 ---
+![Screenshot](assets/screenshot.png)
 
 ## ✨ Features
 
@@ -11,7 +12,6 @@ Welcome to the **AI Terminal Project Generator** — a smart terminal powered by
 - 💬 Natural language command interface
 - 🏗️ Auto-generates full-stack project scaffolds
 - ⚙️ Executes terminal/system commands directly via AI
-- 🌦️ Built-in tools like weather fetching, math, and more
 - 📁 Fully extensible and modular agent architecture
 
 ---
@@ -21,12 +21,12 @@ Welcome to the **AI Terminal Project Generator** — a smart terminal powered by
 1. **Choose your preferred LLM** at startup.
 2. Interact with the AI using natural language prompts like:
    - `"Create a full-stack Next.js + MongoDB project"`
-   - `"Create a full-stack Next.js + MongoDB project"`
+   - `"Create Simple React Application"`
 
 3. The AI:
    - Plans and thinks through the request
    - Uses tools (code generation, shell command execution, API calls)
-   - Iterates through `plan → action → observe → output`
+   - Iterates through `plan → action → observe → output → final `
    - Displays the final result in your terminal
 
 ---
@@ -71,10 +71,7 @@ python main.py
 | ID | Provider   | Model Example            |
 |----|------------|--------------------------|
 | 1  | Gemini     | gemini-1.5-flash         |
-| 2  | Llama      | llama2 / llama3          |
-| 3  | OpenAI     | gpt-4 / gpt-3.5-turbo    |
-| 4  | Anthropic  | Claude                   |
-| 5  | Cohere     | Command R                |
+| 2  | Groq      | meta-llama/llama-4-scout-17b-16e-instruct          |
 
 ---
 
@@ -82,8 +79,8 @@ python main.py
 
 | Tool         | Description                                      |
 |--------------|--------------------------------------------------|
-| `get_weather`| Fetches weather for a given city                 |
-| `add`        | Adds two numbers (comma separated input)         |
+| `create_directory_in_output`| Creates a directory in the output folder if it doesn't already exist.                |
+| `read_file_content`        | Reads the content of a file.         |
 | `run_command`| Runs a system command in your terminal (⚠️ safe use recommended) |
 
 ---
@@ -111,6 +108,7 @@ Terminal_Project_Generator/
 
 - ✅ Multi-model support
 - ✅ Tool-based reasoning loop
+- ⏳ API Calls (Weather, etc.)
 - ⏳ GitHub repo bootstrapping & deployment (Vercel, Render, etc.)
 
 ---
@@ -151,4 +149,4 @@ A big shoutout to **Piyush Garg**, **Hitesh Choudhary**, and the entire **GenAI 
 
 ---
 
-## 🧠 Made with AI. Built for Devs. Terminal-first. 🚀
+### 🧠 Made with ❤️ by Aryan 🚀
