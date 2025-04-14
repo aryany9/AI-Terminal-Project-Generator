@@ -1,4 +1,39 @@
 import os
+def generate_tree(directory, prefix=""):
+    """
+    Recursively generate a tree structure string for a given directory.
+    """
+    tree = ""
+    entries = sorted(os.listdir(directory))
+    for index, entry in enumerate(entries):
+        entry_path = os.path.join(directory, entry)
+        connector = "└── " if index == len(entries) - 1 else "├── "
+        tree += prefix + connector + entry + "\n"
+        if os.path.isdir(entry_path):
+            extension = "    " if index == len(entries) - 1 else "│   "
+            tree += generate_tree(entry_path, prefix + extension)
+    return tree
+
+
+def list_output_structure():
+    """
+    Lists the structure of the output folder in a tree format.
+
+    Returns:
+        dict: A dictionary containing the structure of the output folder.
+    """
+    current_directory = os.getcwd()
+    output_directory = os.path.join(current_directory, "output")
+
+    if not os.path.exists(output_directory):
+        return {"status": "error", "message": "Output directory does not exist."}
+
+    tree_structure = generate_tree(output_directory)
+
+    return {
+        "status": "success",
+        "message": f"Output folder structure:\n{tree_structure}"
+    }
 
 def list_output_directories():
     """
@@ -34,4 +69,3 @@ def read_file_content(file_path: str):
     
     # Return the list of directories
     return {"status": "success", "message": content}
-

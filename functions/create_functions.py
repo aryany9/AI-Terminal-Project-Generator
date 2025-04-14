@@ -31,8 +31,25 @@ def create_file_in_directory(directory_path: str, file_name: str, content: str):
         file_name (str): The name of the file to create.
         content (str): The content to write to the file.
     """
+    
+     # Get the current working directory
+    current_directory = os.getcwd()
+
+    # Check if 'output' is already in the directory_path
+    if "output" in os.path.normpath(directory_path).split(os.sep):
+        output_directory = os.path.join(current_directory, directory_path)
+    else:
+        output_directory = os.path.join(current_directory, "output", directory_path)
+
+    # Make sure the directory exists
+    os.makedirs(output_directory, exist_ok=True)
+    
     # Define the full path for the new file
-    file_path = os.path.join(directory_path, file_name)
+    file_path = os.path.join(output_directory, file_name)
+    
+     # Clean up content
+    if isinstance(content, str):
+        content = content.encode().decode('unicode_escape')  # convert \\n to \n
     
     # Create and write to the file
     with open(file_path, "w") as file:

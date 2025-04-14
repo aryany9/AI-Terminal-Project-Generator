@@ -19,6 +19,10 @@ tools = {
         "fn": list_output_directories,
         "description": "Lists all directories in the output folder."
     },
+    "list_output_structure": {
+        "fn": list_output_directories,
+        "description": "Gives context about the output folder structure."
+    },
     "read_file_content": {
         "fn": read_file_content,
         "description": "Reads the content of a file."

@@ -25,6 +25,7 @@ def process_query(llm_client, user_query, system_prompt):
     
     # Track current working directory
     original_cwd = os.getcwd()
+    success = False
     
     try:
         while True:
@@ -32,6 +33,9 @@ def process_query(llm_client, user_query, system_prompt):
             try:
                 response = llm_client.run_query(messages)
                 parsed_output = json.loads(response)
+                if isinstance(parsed_output, list):
+                    print(colored("⚠️ Warning: Received a list instead of a dict. Using the first item.", "magenta"))
+                    parsed_output = parsed_output[0] if parsed_output and isinstance(parsed_output[0], dict) else {}
             except json.JSONDecodeError:
                 print(colored("Error: LLM response was not valid JSON. Retrying...", "red"))
                 continue
@@ -41,7 +45,7 @@ def process_query(llm_client, user_query, system_prompt):
             
             # Add response to message history
             messages.append({"role": "assistant", "content": json.dumps(parsed_output)})
-            print(colored(f"🤖 LLM Response: {parsed_output}", "green"))
+            # print(colored(f"🤖 LLM Response: {parsed_output}", "green"))
             # Handle different step types
             if parsed_output.get("step") == "plan":
                 print(colored(f"🧠 Planning: {parsed_output.get('content')}", "yellow"))
@@ -64,6 +68,12 @@ def process_query(llm_client, user_query, system_prompt):
                 if tool_name in tools:
                     fn = tools[tool_name]["fn"]
                     try:
+                        # Clean malformed content (fix bad `\n`)
+                        if isinstance(tool_input, dict) and 'content' in tool_input:
+                            content = tool_input['content']
+                            if isinstance(content, str):
+                                tool_input['content'] = content.encode().decode('unicode_escape')
+
                         # Execute the tool function with appropriate parameters
                         if isinstance(tool_input, dict):
                             output = fn(**tool_input)  # Unpack keyword arguments
@@ -79,17 +89,18 @@ def process_query(llm_client, user_query, system_prompt):
                             status = output["status"]
                             message = output.get("message", "")
                             
-                            if status == "success":
-                                print(colored(f"✅ Success: {message}", "green"))
-                            elif status == "error":
-                                print(colored(f"❌ Error: {message}", "red"))
-                            elif status == "partial":
-                                print(colored(f"⚠️ Partial: {message}", "yellow"))
+                        if status == "success":
+                            print(colored(f"✅ Success: {message}", "green"))
+                        elif status == "error":
+                            print(colored(f"❌ Error: {message}", "red"))
+                        elif status == "partial":
+                            print(colored(f"⚠️ Partial: {message}", "yellow"))
                         
                     except Exception as e:
                         output = {"status": "error", "message": str(e)}
                         print(colored(f"❌ Tool error: {str(e)}", "red"))
-                    
+
+                        
                     # Add observation to message history
                     messages.append({
                         "role": "assistant",
@@ -111,8 +122,16 @@ def process_query(llm_client, user_query, system_prompt):
                     continue
                     
             elif parsed_output.get("step") == "output":
+                print(colored(f"📦 Output: {parsed_output.get('content')}", "blue"))
+                messages.append({
+                    "role": "user",
+                    "content": "Provide a summary of what you've created including the project structure, files, and key features."
+                })
+                continue
+            
+            elif parsed_output.get("step") == "final":
                 print(colored(f"🎉 Complete: {parsed_output.get('content')}", "green"))
-                return parsed_output.get('content')
+                return parsed_output.get("content")
                 
             elif parsed_output.get("step") == "observe":
                 print(colored(f"👁️ Observation: {parsed_output.get('content')}", "magenta"))
