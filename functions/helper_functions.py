@@ -1,77 +1,156 @@
 import json
 import os
 import requests
-
-avaiable_tools = {
-    "get_weather": {
-        "fn": lambda city: get_weather(city),
-        "description": "Takes a city name as an input and returns the current weather for the city"
-    },
-    "add": {
-        "fn": lambda input: add(input),
-        "description": "Takes two numbers as input and returns the sum of the two numbers"
-    },
-    "run_command": {
-        "fn": lambda command: run_command(command),
-        "description": "Takes a command as input to execute on system and returns output"
-    }
-}
-
-def run_command(command):
-    result = os.system(command)
-    return result
-
-def get_weather(city: str):
-    print("🔨 Tool Called: get_weather", city)
-    url = f"https://wttr.in/{city}?format=%C+%t"
-    response = requests.get(url)
-    return f"The weather in {city} is {response.text}." if response.status_code == 200 else "Something went wrong"
-
-def add(input: str):
-    x, y = map(int, input.split(","))
-    print("🔨 Tool Called: add", x, y)
-    return x + y
-
+from termcolor import colored
+from utils.tools import tools
 
 def process_query(llm_client, user_query, system_prompt):
     """
     Processes the user query using the chosen LLM client.
-
+    
     Args:
+        llm_client: The LLM client to use for processing.
         user_query (str): The user's query.
-
-    Returns:
-        str: The response from the LLM.
-    """
-    
-    messages = [{ "role": "system", "content": system_prompt }]
-    messages.append({ "role": "user", "content": user_query })
-    
-    
-    while True:
-        # Assuming llm_client is already defined and initialized
-        response = llm_client.run_query(messages)
-        parsed_output = json.loads(response)
+        system_prompt (str): The system prompt to use.
         
-        messages.append({ "role": "assistant", "content": json.dumps(parsed_output) })
-
-        if parsed_output.get("step") == "plan":
-            print(f"🧠: {parsed_output.get('content')}")
-            continue
-
-        if parsed_output.get("step") == "action":
-            print(f"🔨: {parsed_output.get('function')}: {parsed_output.get('input')}")
-            tool_name = parsed_output.get("function")
-            tool_input = parsed_output.get("input")
-
-            if avaiable_tools.get(tool_name):
-                output = avaiable_tools[tool_name]["fn"](tool_input)
+    Returns:
+        str: The final output from the LLM.
+    """
+    # Create output directory if it doesn't exist
+    if not os.path.exists('output'):
+        os.makedirs('output')
+    
+    messages = [{"role": "system", "content": system_prompt}]
+    messages.append({"role": "user", "content": user_query})
+    
+    # Track current working directory
+    original_cwd = os.getcwd()
+    success = False
+    
+    try:
+        while True:
+            # Get response from LLM
+            try:
+                response = llm_client.run_query(messages)
+                parsed_output = json.loads(response)
+                if isinstance(parsed_output, list):
+                    print(colored("⚠️ Warning: Received a list instead of a dict. Using the first item.", "magenta"))
+                    parsed_output = parsed_output[0] if parsed_output and isinstance(parsed_output[0], dict) else {}
+            except json.JSONDecodeError:
+                print(colored("Error: LLM response was not valid JSON. Retrying...", "red"))
+                continue
+            except Exception as e:
+                print(colored(f"Error with LLM query: {str(e)}", "red"))
+                return "Error: Failed to get a proper response from the AI assistant."
+            
+            # Add response to message history
+            messages.append({"role": "assistant", "content": json.dumps(parsed_output)})
+            # print(colored(f"🤖 LLM Response: {parsed_output}", "green"))
+            # Handle different step types
+            if parsed_output.get("step") == "plan":
+                print(colored(f"🧠 Planning: {parsed_output.get('content')}", "yellow"))
+                continue
+                
+            elif parsed_output.get("step") == "input":
+                query = input(colored(f"🔍 Input needed: {parsed_output.get('content')}: ", "cyan"))
                 messages.append({
-                    "role": "assistant",
-                    "content": json.dumps({ "step": "observe", "output": output })
+                    "role": "user",
+                    "content": query
                 })
                 continue
+                
+            elif parsed_output.get("step") == "action":
+                tool_name = parsed_output.get("function")
+                tool_input = parsed_output.get("input")
+                
+                print(colored(f"🔨 Action: {tool_name} with input: {tool_input}", "blue"))
+                
+                if tool_name in tools:
+                    fn = tools[tool_name]["fn"]
+                    try:
+                        # Clean malformed content (fix bad `\n`)
+                        if isinstance(tool_input, dict) and 'content' in tool_input:
+                            content = tool_input['content']
+                            if isinstance(content, str):
+                                tool_input['content'] = content.encode().decode('unicode_escape')
 
-        if parsed_output.get("step") == "output":
-            print(f"🤖: {parsed_output.get('content')}")
-            return parsed_output.get('content')
+                        # Execute the tool function with appropriate parameters
+                        if isinstance(tool_input, dict):
+                            output = fn(**tool_input)  # Unpack keyword arguments
+                        elif isinstance(tool_input, (list, tuple)):
+                            output = fn(*tool_input)   # Unpack positional arguments
+                        elif tool_input is None:
+                            output = fn() # No arguments
+                        else:
+                            output = fn(tool_input)    # Single argument
+                            
+                        # Format output feedback based on status
+                        if isinstance(output, dict) and "status" in output:
+                            status = output["status"]
+                            message = output.get("message", "")
+                            
+                        if status == "success":
+                            print(colored(f"✅ Success: {message}", "green"))
+                        elif status == "error":
+                            print(colored(f"❌ Error: {message}", "red"))
+                        elif status == "partial":
+                            print(colored(f"⚠️ Partial: {message}", "yellow"))
+                        
+                    except Exception as e:
+                        output = {"status": "error", "message": str(e)}
+                        print(colored(f"❌ Tool error: {str(e)}", "red"))
+
+                        
+                    # Add observation to message history
+                    messages.append({
+                        "role": "assistant",
+                        "content": json.dumps({"step": "observe", "content": output})
+                    })
+                    continue
+                else:
+                    print(colored(f"❌ Unknown tool: {tool_name}", "red"))
+                    messages.append({
+                        "role": "assistant",
+                        "content": json.dumps({
+                            "step": "observe", 
+                            "content": {
+                                "status": "error", 
+                                "message": f"Unknown tool: {tool_name}"
+                            }
+                        })
+                    })
+                    continue
+                    
+            elif parsed_output.get("step") == "output":
+                print(colored(f"📦 Output: {parsed_output.get('content')}", "blue"))
+                messages.append({
+                    "role": "user",
+                    "content": "Provide a summary of what you've created including the project structure, files, and key features."
+                })
+                continue
+            
+            elif parsed_output.get("step") == "final":
+                print(colored(f"🎉 Complete: {parsed_output.get('content')}", "green"))
+                return parsed_output.get("content")
+                
+            elif parsed_output.get("step") == "observe":
+                print(colored(f"👁️ Observation: {parsed_output.get('content')}", "magenta"))
+                continue
+                
+            else:
+                print(colored(f"❓ Unknown step: {parsed_output.get('step')}", "red"))
+                messages.append({
+                    "role": "assistant",
+                    "content": json.dumps({
+                        "step": "observe", 
+                        "content": {
+                            "status": "error", 
+                            "message": f"Unknown step: {parsed_output.get('step')}"
+                        }
+                    })
+                })
+                continue
+    
+    finally:
+        # Ensure we return to the original directory
+        os.chdir(original_cwd)

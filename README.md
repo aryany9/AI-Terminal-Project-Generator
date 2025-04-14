@@ -21,9 +21,7 @@ Welcome to the **AI Terminal Project Generator** — a smart terminal powered by
 1. **Choose your preferred LLM** at startup.
 2. Interact with the AI using natural language prompts like:
    - `"Create a full-stack Next.js + MongoDB project"`
-   - `"Add authentication using Google OAuth"`
-   - `"What’s the weather in San Francisco?"`
-   - `"Run: npm install"`
+   - `"Create a full-stack Next.js + MongoDB project"`
 
 3. The AI:
    - Plans and thinks through the request
@@ -97,6 +95,7 @@ Terminal_Project_Generator/
 │
 ├── agents/                 # LLM clients and agent logic
 │   └── gemini.py
+│   └── groq.py
 ├── functions/              # Helper tools and utilities
 │   └── helper_functions.py
 ├── utils/                  # System prompts, templates, etc.
@@ -112,8 +111,6 @@ Terminal_Project_Generator/
 
 - ✅ Multi-model support
 - ✅ Tool-based reasoning loop
-- ⏳ AI-driven file generation and editor
-- ⏳ VS Code / browser extension
 - ⏳ GitHub repo bootstrapping & deployment (Vercel, Render, etc.)
 
 ---
@@ -149,11 +146,9 @@ A big shoutout to **Piyush Garg**, **Hitesh Choudhary**, and the entire **GenAI 
 ## 📍 Author
 
 **Aryan Yadav**  
-📧 [hello@aryanyadav.com]  
-🌐 [LinkedIn / GitHub / Website if any]
+📧 hello@aryanyadav.com
+🌐 [LinkedIn](https://www.linkedin.com/in/aryany9)
 
 ---
 
 ## 🧠 Made with AI. Built for Devs. Terminal-first. 🚀
-
-```

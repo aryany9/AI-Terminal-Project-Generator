@@ -18,3 +18,4 @@ __pycache__/
 *.tar.zst
 *.tar.lzo
 *.tar.lzop
+/output/
