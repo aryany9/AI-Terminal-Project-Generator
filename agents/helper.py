@@ -1,4 +1,5 @@
 # from gemini import GeminiClient
+from termcolor import colored
 from agents.gemini import GeminiClient
 from agents.groq import GroqClient
 from functions.helper_functions import process_query
@@ -72,8 +73,10 @@ def run_agent():
     while True:
         user_query = input('> What do you want me to create? (type "exit" to quit): ')
         if user_query.lower() == 'exit':
+            print(colored("👋 Goodbye! See you next time.", 'blue'))
             break
 
+        print(colored("Processing your request... ⏳", 'yellow'))
         response = process_query(llm_client, user_query, system_prompt)
         
         print(f"Response: {response}")

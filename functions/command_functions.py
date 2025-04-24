@@ -54,3 +54,21 @@ def run_command(command: str, cwd: str = None, timeout: int = 10) -> dict:
             'status': 'error',
             'message': str(e)
         }
+
+
+def is_npm_package_installed(package_name: str) -> dict:
+    """
+    Check if a package is installed using npm.
+
+    Args:
+        package_name (str): The name of the package to check.
+
+    Returns:
+        dict: {
+            'status': 'Success' or 'Failure' or 'error',
+            'message': Combined stdout and stderr output
+        }
+    """
+    command = f"npm list -g --depth=0 {package_name}"
+    return run_command(command)
+

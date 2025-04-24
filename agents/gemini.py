@@ -21,5 +21,4 @@ class GeminiClient:
             contents=json.dumps(messages)
         )
         
-        # Assuming the response is in JSON format
         return response.text 

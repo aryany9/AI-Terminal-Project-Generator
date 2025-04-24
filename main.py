@@ -1,18 +1,23 @@
 # ENTRY POINT
 from dotenv import load_dotenv
 from termcolor import colored
+import os
 from agents.helper import run_agent
+import time
+
+
+def print_banner():
+    os.system('clear' if os.name == 'posix' else 'cls')  # Clear terminal for better experience
+    print(colored("Welcome to the AI Terminal Project Generator ⚙️", 'green'))
+    print(colored("--------------------------------------------------", 'yellow'))
+    time.sleep(0.5)
 
 # This is the main entry point for the application.
 def main():
-    # Load environment variables
     load_dotenv()
 
+    print_banner()
     run_agent()
-    # Import and run the main function from the agent module
-    # from agent import runAgent
-    # runAgent()
-    # print(colored('hello', 'red'), colored('world', 'green'))
 
 if __name__ == "__main__":
     main()

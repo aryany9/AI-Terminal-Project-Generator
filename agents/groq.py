@@ -8,7 +8,7 @@ class GroqClient:
 
     def run_query(self, messages):
         response = self.client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.3-70b-versatile",
             messages=messages,
             response_format={"type": "json_object"}
         )
